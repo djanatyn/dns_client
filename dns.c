@@ -77,5 +77,5 @@ int main(int argc, char *argv[]) {
   FILE *rp = fopen("response.out","w");
   fwrite(response, sizeof(char), rlen, rp);
 
-  exit(0);
+  return 0;
 }
