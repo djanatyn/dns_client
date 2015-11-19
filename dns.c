@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -70,8 +71,11 @@ int main(int argc, char *argv[]) {
     die("error receiving from google");
   }
   
-  printf("%d bytes received\n\n", rlen);
+  printf("%d bytes received\n", rlen);
+  printf("writing response to ./response.out\n");
 
-  fwrite(response, sizeof(char), rlen, stdout);
+  FILE *rp = fopen("response.out","w");
+  fwrite(response, sizeof(char), rlen, rp);
+
   exit(0);
 }
