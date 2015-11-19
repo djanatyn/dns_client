@@ -19,7 +19,7 @@ void die(char *s) {
 
 int main(int argc, char *argv[]) {
 
-  char hostname[MAX_HOSTNAME_LENGTH];
+  char hostname[MAX_HOSTNAME_LENGTH + 1];
   char request[BUFLEN];
   char response[BUFLEN];
 
