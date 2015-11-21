@@ -4,13 +4,16 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <stdbool.h>
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "dns_packet.h"
+
 #define MAX_HOSTNAME_LENGTH 64
 #define BUFLEN 512
-#define REQUEST_LENGTH 42
 
 void die(char *s) {
   perror(s);
@@ -20,19 +23,14 @@ void die(char *s) {
 int main(int argc, char *argv[]) {
 
   char hostname[MAX_HOSTNAME_LENGTH + 1];
-  char request[BUFLEN];
   char response[BUFLEN];
+  char *packet;
+  const char output_file[] = "response.payload";
 
   int sockfd;
   struct sockaddr_in google_addr;
   int slen = sizeof(google_addr);
   int rlen;
-
-  // read DNS request into request
-  FILE *fp = fopen("dns_request","r");
-  if (fp != NULL) {
-    fread(request, sizeof(char), BUFLEN, fp);
-  }
 
   // parse command line options
   if(argc != 2) {
@@ -62,19 +60,26 @@ int main(int argc, char *argv[]) {
   google_addr.sin_addr.s_addr = inet_addr("8.8.8.8");
   memset(&google_addr.sin_zero, 0, sizeof(google_addr.sin_zero));
 
+  // generate UDP payload
+  DNS_header *header = create_request_header(); 
+  DNS_question *question = create_question(hostname);
+  size_t packet_length = build_packet(header, question, &packet);
+
   // tell google hello
-  if (sendto(sockfd, request, REQUEST_LENGTH, 0, (struct sockaddr *) &google_addr, slen) == -1) {
+  if (sendto(sockfd, packet, packet_length, 0, (struct sockaddr *) &google_addr, slen) == -1) {
     die("error sending to google");
   }
+
+  printf("waiting for response...\n");
 
   if ((rlen = recvfrom(sockfd, response, BUFLEN, 0, (struct sockaddr *) &google_addr, &slen)) == -1) {
     die("error receiving from google");
   }
   
-  printf("%d bytes received\n", rlen);
-  printf("writing response to ./response.out\n");
+  printf("\n%d bytes received\n", rlen);
+  printf("writing response to ./%s\n", output_file);
 
-  FILE *rp = fopen("response.out","w");
+  FILE *rp = fopen(output_file,"w");
   fwrite(response, sizeof(char), rlen, rp);
 
   return 0;
