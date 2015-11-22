@@ -1,5 +1,6 @@
 .*
-dns
-response.payload
+*.o
+*.payload
+bin/*
 out/
 test/
