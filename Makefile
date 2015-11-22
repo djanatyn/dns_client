@@ -3,7 +3,7 @@ CFLAGS=-c -Wall
 
 all: dns_client
 
-dns_client: main.o dns.o
+dns_client: main.o
 	$(CC) main.o -o dns_client
 
 main.o: main.c
