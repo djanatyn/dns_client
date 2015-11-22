@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include "dns_packet.h"
+#include "dns.h"
 
 #define MAX_HOSTNAME_LENGTH 64
 #define BUFLEN 512
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 
   int sockfd;
   struct sockaddr_in google_addr;
-  int slen = sizeof(google_addr);
+  unsigned int slen = sizeof(google_addr);
   int rlen;
 
   // parse command line options
