@@ -4,7 +4,7 @@ CFLAGS=-c -Wall
 all: dns_client
 
 dns_client: main.o
-	$(CC) main.o -o dns_client
+	$(CC) main.o -o bin/dns_client
 
 main.o: main.c
 	$(CC) $(CFLAGS) main.c
