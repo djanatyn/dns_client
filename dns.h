@@ -7,8 +7,6 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#pragma(pack) /* #c: not sure if this is necessary? */
-
 typedef struct {
   uint16_t id;
   uint16_t flags;
@@ -22,13 +20,8 @@ typedef struct {
   size_t length;
   uint16_t qtype;
   uint16_t qclass;
-  unsigned char qname[];
+  char qname[];
 } DNS_question;
-
-typedef struct {
-  DNS_header header;
-  unsigned char qname[];
-} DNS_packet;
 
 DNS_header *create_request_header() {
   srandom(time(NULL));
@@ -57,7 +50,7 @@ DNS_question *create_question(const char *hostname) {
   char *hostname_dup = strdup(hostname);
   token = strtok(hostname_dup, delim);
 
-  char *qname_p = question->qname;
+  char *qname_p = &question->qname[0];
   while(token != NULL) {
     size_t len = strlen(token);
 
