@@ -25,7 +25,8 @@ int main(int argc, char *argv[]) {
   char hostname[MAX_HOSTNAME_LENGTH + 1];
   unsigned char response[BUFLEN];
   unsigned char *packet;
-  const char output_file[] = "response.payload";
+  const char response_output_file[] = "out/response.payload";
+  const char query_output_file[] = "out/query.payload";
 
   int sockfd;
   struct sockaddr_in google_addr;
@@ -65,7 +66,8 @@ int main(int argc, char *argv[]) {
   DNS_question *question = create_question(hostname);
   size_t packet_length = build_packet(header, question, &packet);
 
-  FILE *qp = fopen("query.payload","w");
+  printf("writing query to %s\n", query_output_file);
+  FILE *qp = fopen(query_output_file,"w");
   fwrite(packet, sizeof(char), packet_length, qp);
   fclose(qp);
 
@@ -81,9 +83,9 @@ int main(int argc, char *argv[]) {
   }
 
   printf("\n%d bytes received\n", rlen);
-  printf("writing response to ./%s\n", output_file);
 
-  FILE *rp = fopen(output_file,"w");
+  printf("writing response to %s\n", response_output_file);
+  FILE *rp = fopen(response_output_file,"w");
   fwrite(response, sizeof(char), rlen, rp);
   fclose(rp);
 
