@@ -23,8 +23,8 @@ void die(char *s) {
 int main(int argc, char *argv[]) {
 
   char hostname[MAX_HOSTNAME_LENGTH + 1];
-  char response[BUFLEN];
-  char *packet;
+  unsigned char response[BUFLEN];
+  unsigned char *packet;
   const char output_file[] = "response.payload";
 
   int sockfd;
@@ -65,6 +65,10 @@ int main(int argc, char *argv[]) {
   DNS_question *question = create_question(hostname);
   size_t packet_length = build_packet(header, question, &packet);
 
+  FILE *qp = fopen("query.payload","w");
+  fwrite(packet, sizeof(char), packet_length, qp);
+  fclose(qp);
+
   // tell google hello
   if (sendto(sockfd, packet, packet_length, 0, (struct sockaddr *) &google_addr, slen) == -1) {
     die("error sending to google");
@@ -75,12 +79,18 @@ int main(int argc, char *argv[]) {
   if ((rlen = recvfrom(sockfd, response, BUFLEN, 0, (struct sockaddr *) &google_addr, &slen)) == -1) {
     die("error receiving from google");
   }
-  
+
   printf("\n%d bytes received\n", rlen);
   printf("writing response to ./%s\n", output_file);
 
   FILE *rp = fopen(output_file,"w");
   fwrite(response, sizeof(char), rlen, rp);
+  fclose(rp);
+
+  // start parsing the response
+  printf("parsing response...\n\n");
+
+  parse_packet(packet_length, response);
 
   return 0;
 }
