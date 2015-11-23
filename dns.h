@@ -105,6 +105,7 @@ void parse_packet(size_t query_length, unsigned char *packet) {
     if (*responsep == 0xc0) {
       printf("found pointer!\n");
       uint16_t offset = ntohs(*(uint16_t *)responsep) & 0x3fff ; /* remove pointer bits */
+      printf("offset of pointer: 0x%x\n", offset);
       break;
     }
   }

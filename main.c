@@ -20,10 +20,25 @@ void die(char *s) {
   exit(1);
 }
 
+void write_buffer(unsigned char *buffer, size_t len, const char *filename) {
+  FILE *fp = fopen(filename,"w");
+  if(fp == NULL) {
+    die("unable to open file");
+  }
+
+  if(fwrite(buffer, sizeof(char), len, fp) == -1) {
+    die("error opening file");
+  }
+
+  fclose(fp);
+}
+
 int main(int argc, char *argv[]) {
 
   char hostname[MAX_HOSTNAME_LENGTH + 1];
   unsigned char response[BUFLEN];
+  unsigned char *packet;
+
   const char response_output_file[] = "out/response.payload";
   const char query_output_file[] = "out/query.payload";
 
@@ -47,7 +62,7 @@ int main(int argc, char *argv[]) {
   // strcpy woooo (this is maybe unecessary)
   strcpy(hostname, argv[1]);
 
-  printf("Querying hostname: %s\n\n", hostname);
+  printf(">> Querying hostname: %s\n", hostname);
 
   // create socket
   if((sockfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
@@ -63,36 +78,33 @@ int main(int argc, char *argv[]) {
   // generate UDP payload
   DNS_header *header = create_request_header(); 
   DNS_question *question = create_question(hostname);
-  unsigned char *packet;
   size_t packet_length = build_packet(header, question, &packet);
+
+  // write packet
+  write_buffer(packet, packet_length, query_output_file);
+
   free(header);
   free(question);
 
-  printf("writing query to %s\n", query_output_file);
-  FILE *qp = fopen(query_output_file,"w");
-  fwrite(packet, sizeof(char), packet_length, qp);
-  fclose(qp);
 
   // tell google hello
   if (sendto(sockfd, packet, packet_length, 0, (struct sockaddr *) &google_addr, slen) == -1) {
     die("error sending to google");
   }
 
-  printf("waiting for response...\n");
+  printf(">> Waiting for response...\n");
 
   if ((rlen = recvfrom(sockfd, response, BUFLEN, 0, (struct sockaddr *) &google_addr, &slen)) == -1) {
     die("error receiving from google");
   }
 
-  printf("\n%d bytes received\n", rlen);
+  printf(">> %d bytes received.\n", rlen);
 
-  printf("writing response to %s\n", response_output_file);
-  FILE *rp = fopen(response_output_file,"w");
-  fwrite(response, sizeof(char), rlen, rp);
-  fclose(rp);
+  // write packet
+  write_buffer(response, rlen, response_output_file);
 
   // start parsing the response
-  printf("parsing response...\n\n");
+  printf(">> Parsing response...\n\n");
 
   parse_packet(packet_length, response);
 
