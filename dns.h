@@ -40,6 +40,11 @@ DNS_header *create_request_header() {
 DNS_question *create_question(const char *hostname) {
   DNS_question *question = malloc(sizeof(DNS_question) + strlen(hostname) + 2);
 
+  // the amount of memory needed to QNAME label of an FQDN of length n
+  // characters is always n + 2.
+  // 
+  // there is an initial length prefix added to the first string of
+  // characters, as well as an additional null byte at the end.
   question->length = strlen(hostname) + 2;
   question->qtype  = htons(1);
   question->qclass = htons(1);
