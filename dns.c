@@ -89,10 +89,29 @@ void parse_packet(size_t query_length, unsigned char *packet) {
     if (*responsep == 0xc0) {
       printf("found pointer!\n");
       uint16_t offset = ntohs(*(uint16_t *)responsep) & 0x3fff ; /* remove pointer bits */
-      printf("offset of pointer: 0x%x\n", offset);
+      printf("parsed label: %s\n", parse_label(packet, offset));
       break;
     }
   }
 
   free(response_header);
+}
+
+const char *parse_label(unsigned char *packet, uint16_t offset) {
+  size_t packet_label_length = strlen((const char *)&packet[offset]);
+  char *string = malloc(packet_label_length - 1); /* there is an additional length prefix byte at the beginning */
+
+  unsigned char *labelp = &packet[offset];
+  int i = 0; /* index var for position in string */
+
+  while(*labelp) {
+    if(i) {
+      string[i++] = '.'; // add a dot if we're not at the beginning of the string
+    }
+    memcpy(string + i, labelp + 1, *labelp); /* copy the bytes following the length prefix */
+    i += *labelp;                            /* increment string index by length prefix */
+    labelp += *labelp + 1;                   /* increment labelp to the next length prefix byte */
+  }
+
+  return (const char *)string;
 }

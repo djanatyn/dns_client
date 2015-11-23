@@ -25,7 +25,10 @@ typedef struct {
 
 DNS_header *create_request_header(); 
 DNS_question *create_question(const char *hostname);
+
 size_t build_packet(DNS_header *header, DNS_question *question, unsigned char **packet);
+
 void parse_packet(size_t query_length, unsigned char *packet);
+const char *parse_label(unsigned char *packet, uint16_t offset);
 
 #endif
