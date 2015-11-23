@@ -69,17 +69,18 @@ size_t build_packet(DNS_header *header, DNS_question *question, unsigned char **
   size_t header_s = sizeof(DNS_header);
   size_t question_s = question->length + sizeof(question->qtype) + sizeof(question->qclass);
   size_t length = header_s + question_s;
+
   *packet = malloc(length);
 
   // copy into packet byte array
-  unsigned char *offset = *packet;
-  memcpy(offset, header, sizeof(DNS_header));
+  uint8_t offset = 0;
+  memcpy(*packet + offset, header, sizeof(DNS_header));
   offset += sizeof(DNS_header);
-  memcpy(offset, question->qname, question->length);
+  memcpy(*packet + offset, question->qname, question->length);
   offset += question->length;
-  memcpy(offset, &question->qtype, sizeof(question->qtype)); 
+  memcpy(*packet + offset, &question->qtype, sizeof(question->qtype)); 
   offset += sizeof(question->qtype);
-  memcpy(offset, &question->qclass, sizeof(question->qclass)); 
+  memcpy(*packet + offset, &question->qclass, sizeof(question->qclass)); 
 
   return length;
 }
@@ -94,9 +95,11 @@ void parse_packet(size_t query_length, unsigned char *packet) {
   printf("resource records returned: %d\n", resource_records);
 
   // parse NAME in RR
-  while(*responsep != 0) {
+  while(*responsep) {
     if (*responsep == 0xc0) {
       printf("found pointer!\n");
+      uint16_t offset = ntohs(*(uint16_t *)responsep) & 0x3fff ; /* remove pointer bits */
+      printf("strlen(label): %d\n",strlen(packet[offset]));
       break;
     }
   }

@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
 
   char hostname[MAX_HOSTNAME_LENGTH + 1];
   unsigned char response[BUFLEN];
-  unsigned char *packet;
   const char response_output_file[] = "out/response.payload";
   const char query_output_file[] = "out/query.payload";
 
@@ -64,6 +63,7 @@ int main(int argc, char *argv[]) {
   // generate UDP payload
   DNS_header *header = create_request_header(); 
   DNS_question *question = create_question(hostname);
+  unsigned char *packet;
   size_t packet_length = build_packet(header, question, &packet);
 
   printf("writing query to %s\n", query_output_file);
