@@ -4,16 +4,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <stdbool.h>
-
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include "dns.h"
 
-#define MAX_HOSTNAME_LENGTH 64
-#define BUFLEN 512
 
 void die(char *s) {
   perror(s);
@@ -86,18 +82,15 @@ int main(int argc, char *argv[]) {
   free(header);
   free(question);
 
-
   // tell google hello
   if (sendto(sockfd, packet, packet_length, 0, (struct sockaddr *) &google_addr, slen) == -1) {
     die("error sending to google");
   }
-
   printf(">> Waiting for response...\n");
 
   if ((rlen = recvfrom(sockfd, response, BUFLEN, 0, (struct sockaddr *) &google_addr, &slen)) == -1) {
     die("error receiving from google");
   }
-
   printf(">> %d bytes received.\n", rlen);
 
   // write packet
@@ -105,9 +98,7 @@ int main(int argc, char *argv[]) {
 
   // start parsing the response
   printf(">> Parsing response...\n\n");
-
   parse_packet(packet_length, response);
-
   free(packet);
 
   return 0;
