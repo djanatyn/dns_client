@@ -11,12 +11,12 @@
 #include "dns.h"
 
 
-void die(char *s) {
+static void die(char *s) {
   perror(s);
   exit(1);
 }
 
-void write_buffer(unsigned char *buffer, size_t len, const char *filename) {
+static void write_buffer(unsigned char *buffer, size_t len, const char *filename) {
   FILE *fp = fopen(filename,"w");
   if(fp == NULL) {
     die("unable to open file");
