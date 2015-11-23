@@ -74,7 +74,7 @@ size_t build_packet(DNS_header *header, DNS_question *question, unsigned char **
   *packet = malloc(length);
 
   // copy into packet byte array
-  uint8_t offset = 0;
+  int offset = 0;
   memcpy(*packet + offset, header, sizeof(DNS_header));
   offset += sizeof(DNS_header);
   memcpy(*packet + offset, question->qname, question->length);
