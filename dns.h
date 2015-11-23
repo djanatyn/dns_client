@@ -59,12 +59,12 @@ DNS_question *create_question(const char *hostname) {
   while(token != NULL) {
     size_t len = strlen(token);
 
-    *qname_p = len;               /* set first byte to the length of the string */
-    qname_p++;                    /* move forward one byte */
-    strncpy(qname_p, token, len); /* copy string to buffer */
-    qname_p += len;               /* increment pointer to null byte */
+    *qname_p = len;                   /* set first byte to the length of the string */
+    qname_p++;                        /* move forward one byte */
+    strncpy(qname_p, token, len + 1); /* copy string to buffer; add 1 for null byte! */
+    qname_p += len;                   /* increment pointer to null byte */
 
-    token = strtok(NULL,delim);   /* get another token */
+    token = strtok(NULL,delim);       /* get another token */
   }
 
   free(hostname_dup);
