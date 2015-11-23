@@ -65,6 +65,8 @@ int main(int argc, char *argv[]) {
   DNS_question *question = create_question(hostname);
   unsigned char *packet;
   size_t packet_length = build_packet(header, question, &packet);
+  free(header);
+  free(question);
 
   printf("writing query to %s\n", query_output_file);
   FILE *qp = fopen(query_output_file,"w");
@@ -93,6 +95,8 @@ int main(int argc, char *argv[]) {
   printf("parsing response...\n\n");
 
   parse_packet(packet_length, response);
+
+  free(packet);
 
   return 0;
 }

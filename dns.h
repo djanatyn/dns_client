@@ -62,6 +62,7 @@ DNS_question *create_question(const char *hostname) {
     token = strtok(NULL,delim);   /* get another token */
   }
 
+  free(hostname_dup);
   return question;
 }
 
@@ -99,10 +100,11 @@ void parse_packet(size_t query_length, unsigned char *packet) {
     if (*responsep == 0xc0) {
       printf("found pointer!\n");
       uint16_t offset = ntohs(*(uint16_t *)responsep) & 0x3fff ; /* remove pointer bits */
-      printf("strlen(label): %d\n",strlen(packet[offset]));
       break;
     }
   }
+
+  free(response_header);
 }
 
 #endif
