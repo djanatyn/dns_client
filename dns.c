@@ -7,6 +7,30 @@
 
 #include "dns.h"
 
+const char *address_types[16] = {
+  "A",
+  "NS",
+  "MD",
+  "MF",
+  "CNAME",
+  "SOA",
+  "MB",
+  "MG",
+  "MR",
+  "NULL",
+  "WKS",
+  "PTR",
+  "HINFO",
+  "MINFO",
+  "MX",
+  "TXT"};
+
+const char *address_classes[4] = {
+  "IN",
+  "CS",
+  "CH",
+  "HS"};
+
 DNS_header *create_request_header() {
   srandom(time(NULL));
 
@@ -76,6 +100,7 @@ size_t build_packet(DNS_header *header, DNS_question *question, unsigned char **
 }
 
 void parse_packet(size_t query_length, unsigned char *packet) {
+  const char *hostname;
   unsigned char *responsep = packet + query_length;
 
   DNS_header *response_header = malloc(sizeof(DNS_header));
@@ -84,14 +109,51 @@ void parse_packet(size_t query_length, unsigned char *packet) {
   int resource_records = ntohs(response_header->ancount);
   printf("resource records returned: %d\n", resource_records);
 
-  // parse NAME in RR
-  while(*responsep) {
-    if (*responsep == 0xc0) {
-      printf("found pointer!\n");
-      uint16_t offset = ntohs(*(uint16_t *)responsep) & 0x3fff ; /* remove pointer bits */
-      printf("parsed label: %s\n", parse_label(packet, offset));
-      break;
+  int record_count = 0;
+  while(record_count < resource_records && *responsep) {
+    if(record_count) {
+      printf("\n");
     }
+
+    // check for pointer
+    if (*responsep == 0xc0) {
+      uint16_t offset = ntohs(*(uint16_t *)responsep) & 0x3fff ; /* remove pointer bits */
+      hostname = parse_label(packet, offset);
+    } else {
+      hostname = parse_label(packet, query_length);
+    }
+
+    printf("%-10s %s\n", ">> FQDN:", hostname); 
+    responsep += strlen((const char *)responsep);
+
+    uint16_t type = ntohs(*(uint16_t *)responsep);
+    printf("%-10s %s\n", ">> TYPE:", address_types[type - 1]);
+    responsep += 2;
+
+    uint16_t class = ntohs(*(uint16_t *)responsep);
+    printf("%-10s %s\n", ">> TYPE:", address_classes[class - 1]);
+    responsep += 2;
+
+    uint32_t ttl = ntohs(*(uint32_t *)responsep);
+    printf("%-10s %u\n", ">> TTL:", ttl);
+    responsep += 4;
+
+    uint16_t rdlength = ntohs(*(uint16_t *)responsep);
+    printf("%-10s %hu\n", ">> RDLENGTH:", rdlength);
+    responsep += 2;
+
+    printf("%-10s", ">> RDATA");
+    for(int i = 0; i < rdlength; i++) {
+      if(i) {
+        putchar('.');
+      }
+
+      printf("%d", *responsep);
+      responsep++;
+    }
+    putchar('\n');
+    record_count++;
+    free((void *)hostname);
   }
 
   free(response_header);
@@ -99,7 +161,7 @@ void parse_packet(size_t query_length, unsigned char *packet) {
 
 const char *parse_label(unsigned char *packet, uint16_t offset) {
   size_t packet_label_length = strlen((const char *)&packet[offset]);
-  char *string = malloc(packet_label_length - 1); /* there is an additional length prefix byte at the beginning */
+  char *string = calloc(packet_label_length, sizeof(char));
 
   unsigned char *labelp = &packet[offset];
   int i = 0; /* index var for position in string */

@@ -10,7 +10,6 @@
 
 #include "dns.h"
 
-
 static void die(char *s) {
   perror(s);
   exit(1);
