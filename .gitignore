@@ -1,6 +1,6 @@
 .*
 *.o
 *.payload
-bin/
 out/
 test/
+bin/
