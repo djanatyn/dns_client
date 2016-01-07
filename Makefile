@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -std=gnu11
 
 all: dns_client
 
